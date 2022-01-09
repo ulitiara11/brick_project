@@ -1,0 +1,51 @@
+select * from ods.customer;
+select * from ods.order_item;
+select * from ods.orders;
+select * from ods.order_payments;
+select * from ods.products;
+
+--Top 10 city with the most order
+select a.customer_zip_code_prefix, count(ab.order_item_id) as most_order
+from ods.customer a left join ods.orders bb
+on a.customer_id = bb.customer_id
+left join ods.order_item ab
+on ab.order_id = bb.order_id
+group by a.customer_zip_code_prefix
+having count(ab.order_item_id)>1
+limit 10
+
+--Top 10 product category with the most order using credit
+card
+select pr.product_category_name, count(oi.order_item_id) as most_order 
+from ods.products pr left join ods.order_item oi
+on pr.product_id=oi.product_id
+left join ods.order_payments bb 
+on oi.order_id=bb.order_id
+where payment_type='credit_card'
+group by pr.product_category_name
+limit 10;
+
+--Top 10 cities with the most highest payment value
+select a.customer_zip_code_prefix, ab.payment_value
+from ods.customer a left join ods.orders bb
+on a.customer_id = bb.customer_id
+left join ods.order_payments ab
+on ab.order_id = bb.order_id
+where ab.payment_value is not null
+order by ab.payment_value desc
+limit 10
+
+--Top 10 seller with the highest gross values
+select distinct cc.seller_id, op.payment_value 
+from ods.order_item cc join ods.order_payments op 
+on cc.order_id=op.order_id
+order by op.payment_value desc
+limit 10;
+
+
+-- Top 10 Product Category with the worst freight efficiency
+select distinct pr.product_category_name, sum(oi.freight_value) as freight_value_sum
+from ods.products pr inner join ods.order_item oi
+on pr.product_id=oi.product_id
+group by pr.product_category_name
+limit 10;
